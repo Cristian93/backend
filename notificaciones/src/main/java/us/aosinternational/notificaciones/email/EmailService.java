@@ -23,50 +23,53 @@ import org.springframework.stereotype.Service;
 @Service
 public class EmailService {
 
-    private List<Email> emails = new ArrayList<>(Arrays.asList(new Email("cristian.franco@aossas.com", "Pago de Multa", "Paguela")));
+    private List<Email> emailss = new ArrayList<>(Arrays.asList(new Email("cristian.franco@aossas.com", "Pago de Multa", "Paguela")));
 
     public List<Email> getEmails() {
 
-        return emails;
+        return emailss;
     }
 
     //Crear Email
-    public void sendEmail(Email email) {
+    public void sendEmail(Email[] emails) {
 
-        emails.add(email);
+        //emails.add(email);
+        for (int i = 0; i < emails.length; i++) {
 
-        //Enviar mensaje
-        try {
+            //Enviar mensaje
+            try {
 
-            String FROM = "cristiandavidfrancogarcia@gmail.com";
+                String FROM = "cristiandavidfrancogarcia@gmail.com";
 
-            Properties props = new Properties();
-            props.setProperty("mail.smtp.host", "smtp.gmail.com");
-            props.setProperty("mail.smtp.ssl.enable", "true");
-            props.setProperty("mail.smtp.starttls.enable", "true");
-            props.setProperty("mail.smtp.auth", "true");
-            props.setProperty("mail.smtp.port", "465");
-            props.setProperty("mail.smtp.user", FROM);
+                Properties props = new Properties();
+                props.setProperty("mail.smtp.host", "smtp.gmail.com");
+                props.setProperty("mail.smtp.ssl.enable", "true");
+                props.setProperty("mail.smtp.starttls.enable", "true");
+                props.setProperty("mail.smtp.auth", "true");
+                props.setProperty("mail.smtp.port", "465");
+                props.setProperty("mail.smtp.user", FROM);
 
-            // Preparamos la sesion
-            Session session = Session.getDefaultInstance(props);
+                // Preparamos la sesion
+                Session session = Session.getDefaultInstance(props);
 
-            // Construimos el mensaje
-            MimeMessage message = new MimeMessage(session);
-            message.setFrom(new InternetAddress(FROM));
-            message.addRecipient(Message.RecipientType.TO, new InternetAddress(
-                    email.getTo()));
-            message.setSubject(email.getSubject());
-            message.setText(email.getText());
+                // Construimos el mensaje
+                MimeMessage message = new MimeMessage(session);
+                message.setFrom(new InternetAddress(FROM));
+                message.addRecipient(Message.RecipientType.TO, new InternetAddress(
+                        emails[i].getTo()));
+                message.setSubject(emails[i].getSubject());
+                message.setText(emails[i].getText());
 
-            // Lo enviamos.
-            Transport t = session.getTransport("smtp");
-            t.connect(FROM, "PRUEBASAOS");
-            t.sendMessage(message, message.getAllRecipients());
-            // Cierre.
-            t.close();
-        } catch (Exception e) {
-            e.printStackTrace();
+                // Lo enviamos.
+                Transport t = session.getTransport("smtp");
+                t.connect(FROM, "PRUEBASAOS");
+                t.sendMessage(message, message.getAllRecipients());
+                // Cierre.
+                t.close();
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
+
         }
 
     }

@@ -29,7 +29,7 @@ public class EmailController {
 
     //sendEmails
     @RequestMapping(method = RequestMethod.POST, value = "/emails")
-    public void sendEmail(@RequestBody Email email) {
-        emailService.sendEmail(email);
+    public void sendEmail(@RequestBody Email [] emails) {
+        emailService.sendEmail(emails);
     }
 }
