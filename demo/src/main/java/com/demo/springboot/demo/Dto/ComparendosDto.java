@@ -19,8 +19,9 @@ public class ComparendosDto {
     private String placaVehiculo;
     private String tipoVehiculo;
     private String servicioVehiculo;
+    private UsuarioDto usuario;
 
-    public ComparendosDto(String numero, IdentificacionDto identificacion, String fecha, String direccion, String estado, Boolean fotodeteccion, String codigo, BigDecimal total, String secretaria, String placaVehiculo, String tipoVehiculo, String servicioVehiculo) {
+    public ComparendosDto(String numero, IdentificacionDto identificacion, String fecha, String direccion, String estado, Boolean fotodeteccion, String codigo, BigDecimal total, String secretaria, String placaVehiculo, String tipoVehiculo, String servicioVehiculo, UsuarioDto usuario) {
         this.numero = numero;
         this.identificacion = identificacion;
         this.fecha = parseDate(fecha);
@@ -33,6 +34,7 @@ public class ComparendosDto {
         this.placaVehiculo = placaVehiculo;
         this.tipoVehiculo = tipoVehiculo;
         this.servicioVehiculo = servicioVehiculo;
+        this.usuario = usuario;
     }
 
     public String getCodigo() {
@@ -129,6 +131,14 @@ public class ComparendosDto {
 
     public void setTotal(BigDecimal total) {
         this.total = total;
+    }
+
+    public UsuarioDto getUsuario() {
+        return usuario;
+    }
+
+    public void setUsuario(UsuarioDto usuario) {
+        this.usuario = usuario;
     }
 
     public Date parseDate(String sFecha){

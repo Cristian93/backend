@@ -6,12 +6,15 @@ public class IdentificacionDto {
 
     private Integer tipo;
 
+    private String placa;
+
     public IdentificacionDto() {
     }
 
-    public IdentificacionDto(String numero, Integer tipo) {
+    public IdentificacionDto(String numero, Integer tipo, String placa) {
         this.numero = numero;
         this.tipo = tipo;
+        this.placa = placa;
     }
 
     public String getNumero() {
@@ -30,4 +33,11 @@ public class IdentificacionDto {
         this.tipo = tipo;
     }
 
+    public String getPlaca() {
+        return placa;
+    }
+
+    public void setPlaca(String placa) {
+        this.placa = placa;
+    }
 }
