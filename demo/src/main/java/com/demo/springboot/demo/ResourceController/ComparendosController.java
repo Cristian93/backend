@@ -1,8 +1,10 @@
-package com.demo.springboot.demo;
+package com.demo.springboot.demo.ResourceController;
 
 import com.demo.springboot.demo.Dto.ComparendosDto;
 import com.demo.springboot.demo.Dto.IdentificacionDto;
 import com.demo.springboot.demo.Services.ComparendoService;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 import servicios.ClsDatosComparendos;
@@ -12,13 +14,16 @@ import java.util.ArrayList;
 import java.util.List;
 
 @RestController
-public class GreetingController {
+public class ComparendosController {
+
+    private static final Logger LOGGER = LoggerFactory.getLogger(ComparendosDto.class);
 
     @Autowired
     private ComparendoService comparendoService;
 
     @GetMapping("/hi/{name}")
     public String hi(@PathVariable String name) {
+
         IdentificacionDto id = new IdentificacionDto();
         id.setNumero("8909039388");
         id.setTipo(4);
@@ -34,6 +39,7 @@ public class GreetingController {
 
     @PostMapping("/comparendos")
     public List<ComparendosDto> getComparendos(@RequestBody IdentificacionDto identificacion) {
+        LOGGER.info("Este es el Log");
         List<ComparendosDto> listComparendosDto = new ArrayList<>();
 
         if (identificacion.getTipo() != null && identificacion.getNumero() != null) {
