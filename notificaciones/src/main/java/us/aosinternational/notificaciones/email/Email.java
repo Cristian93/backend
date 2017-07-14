@@ -12,7 +12,6 @@ package us.aosinternational.notificaciones.email;
 public class Email {
 
     private String to;
-    private String from;
     private String subject;
     private String text;
 
@@ -20,10 +19,9 @@ public class Email {
 
     }
 
-    public Email(String to, String from, String subject, String text) {
+    public Email(String to, String subject, String text) {
         super();
         this.to = to;
-        this.from = from;
         this.subject = subject;
         this.text = text;
     }
@@ -34,14 +32,6 @@ public class Email {
 
     public void setTo(String to) {
         this.to = to;
-    }
-
-    public String getFrom() {
-        return from;
-    }
-
-    public void setFrom(String from) {
-        this.from = from;
     }
 
     public String getSubject() {

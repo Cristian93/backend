@@ -18,12 +18,12 @@ import org.springframework.stereotype.Service;
 
 /**
  *
- * @author Assist 02
+ * @author Cristian David Franco Garcia
  */
 @Service
 public class EmailService {
 
-    private List<Email> emails = new ArrayList<>(Arrays.asList(new Email("cristian.franco@aossas.com", "cristiandavidfrancogarcia@gmail.com", "Pago de Multa", "Paguela")));
+    private List<Email> emails = new ArrayList<>(Arrays.asList(new Email("cristian.franco@aossas.com", "Pago de Multa", "Paguela")));
 
     public List<Email> getEmails() {
 
@@ -38,20 +38,22 @@ public class EmailService {
         //Enviar mensaje
         try {
 
+            String FROM = "cristiandavidfrancogarcia@gmail.com";
+
             Properties props = new Properties();
             props.setProperty("mail.smtp.host", "smtp.gmail.com");
             props.setProperty("mail.smtp.ssl.enable", "true");
             props.setProperty("mail.smtp.starttls.enable", "true");
             props.setProperty("mail.smtp.auth", "true");
             props.setProperty("mail.smtp.port", "465");
-            props.setProperty("mail.smtp.user", email.getFrom());
+            props.setProperty("mail.smtp.user", FROM);
 
             // Preparamos la sesion
             Session session = Session.getDefaultInstance(props);
 
             // Construimos el mensaje
             MimeMessage message = new MimeMessage(session);
-            message.setFrom(new InternetAddress(email.getFrom()));
+            message.setFrom(new InternetAddress(FROM));
             message.addRecipient(Message.RecipientType.TO, new InternetAddress(
                     email.getTo()));
             message.setSubject(email.getSubject());
@@ -59,9 +61,8 @@ public class EmailService {
 
             // Lo enviamos.
             Transport t = session.getTransport("smtp");
-            t.connect(email.getFrom(), "D93F15kxC07G");
+            t.connect(FROM, "PRUEBASAOS");
             t.sendMessage(message, message.getAllRecipients());
-
             // Cierre.
             t.close();
         } catch (Exception e) {
