@@ -12,17 +12,15 @@ package us.aosinternational.notificaciones.SMS;
 public class SMS {
 
     private String to;
-    private String from;
     private String text;
 
     public SMS() {
 
     }
 
-    public SMS(String to, String from, String text) {
+    public SMS(String to, String text) {
         super();
         this.to = to;
-        this.from = from;
         this.text = text;
     }
 
@@ -32,14 +30,6 @@ public class SMS {
 
     public void setTo(String to) {
         this.to = to;
-    }
-
-    public String getFrom() {
-        return from;
-    }
-
-    public void setFrom(String from) {
-        this.from = from;
     }
 
     public String getText() {

@@ -21,7 +21,7 @@ import us.aosinternational.notificaciones.SMS.SMS;
 @Service
 public class SMSService {
 
-    private List<SMS> SMSs = new ArrayList<>(Arrays.asList(new SMS("+573208943", "+17863984877", "Pago de Multa - Paguela")));
+    private List<SMS> SMSs = new ArrayList<>(Arrays.asList(new SMS("+573208943", "Pago de Multa - Paguela")));
 
     public List<SMS> getSMSs() {
         return SMSs;
@@ -36,7 +36,7 @@ public class SMSService {
 
         Twilio.init(ACCOUNT_SID, AUTH_TOKEN);
 
-        Message message = Message.creator(new PhoneNumber(SMS.getTo()), new PhoneNumber(SMS.getFrom()),SMS.getText()).create();
+        Message message = Message.creator(new PhoneNumber(SMS.getTo()), new PhoneNumber("+17863984877"), SMS.getText()).create();
 
         /*Message message = Message.creator(new PhoneNumber(SMS.getTo()), new PhoneNumber(SMS.getFrom()),
                 SMS.getText())

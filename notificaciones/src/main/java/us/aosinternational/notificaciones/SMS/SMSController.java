@@ -31,7 +31,6 @@ public class SMSController {
 
     @RequestMapping(method = RequestMethod.POST, value = "/SMSs")
     public void sendSMS(@RequestBody SMS SMS) {
-
         SMSservice.sendSMS(SMS);
     }
 
