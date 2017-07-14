@@ -5,7 +5,6 @@
  */
 package us.aosinternational.notificaciones.email;
 
-import java.lang.reflect.Method;
 import java.util.List;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.RequestBody;
@@ -15,7 +14,7 @@ import org.springframework.web.bind.annotation.RestController;
 
 /**
  *
- * @author Assist 02
+ * @author Cristian David Franco Garcia
  */
 @RestController
 public class EmailController {
@@ -30,7 +29,7 @@ public class EmailController {
 
     //sendEmails
     @RequestMapping(method = RequestMethod.POST, value = "/emails")
-    public void sendEmail(@RequestBody Email email) {
-        emailService.sendEmail(email);
+    public void sendEmail(@RequestBody Email [] emails) {
+        emailService.sendEmail(emails);
     }
 }
