@@ -1,6 +1,6 @@
 ----------------------------------------------------------------
-Mon Jul 17 14:58:09 COT 2017:
-Booting Derby version The Apache Software Foundation - Apache Derby - 10.13.1.1 - (1765088): instance a816c00e-015d-5221-2106-000000491000 
+Mon Jul 17 15:50:38 COT 2017:
+Booting Derby version The Apache Software Foundation - Apache Derby - 10.13.1.1 - (1765088): instance a816c00e-015d-5251-2c9d-0000006ed890 
 on database directory memory:C:\Users\Assist 02\Documents\NetBeansProjects\backend\notificaciones\testdb with class loader org.springframework.boot.loader.LaunchedURLClassLoader@12c9b19 
 Loaded from jar:file:/C:/Users/Assist%2002/Documents/NetBeansProjects/backend/notificaciones/target/notificaciones-0.0.1-SNAPSHOT.jar!/BOOT-INF/lib/derby-10.13.1.1.jar!/
 java.vendor=Oracle Corporation

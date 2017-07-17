@@ -1,6 +1,6 @@
 ----------------------------------------------------------------
-Mon Jul 17 12:17:26 COT 2017:
-Booting Derby version The Apache Software Foundation - Apache Derby - 10.13.1.1 - (1765088): instance a816c00e-015d-518d-feea-000000c703e0 
+Mon Jul 17 17:38:20 COT 2017:
+Booting Derby version The Apache Software Foundation - Apache Derby - 10.13.1.1 - (1765088): instance a816c00e-015d-52b3-cad0-0000006f0450 
 on database directory memory:C:\Users\Assist 02\Documents\NetBeansProjects\backend\vehiculos\testdb with class loader org.springframework.boot.loader.LaunchedURLClassLoader@12c9b19 
 Loaded from jar:file:/C:/Users/Assist%2002/Documents/NetBeansProjects/backend/vehiculos/target/vehiculos-0.0.1-SNAPSHOT.jar!/BOOT-INF/lib/derby-10.13.1.1.jar!/
 java.vendor=Oracle Corporation
