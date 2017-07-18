@@ -1,20 +1,22 @@
 package com.demo.springboot.demo.Dto;
 
+import java.util.List;
+
 public class IdentificacionDto {
 
     private String numero;
 
     private Integer tipo;
 
-    private String placa;
+    private List<String> placas;
 
     public IdentificacionDto() {
     }
 
-    public IdentificacionDto(String numero, Integer tipo, String placa) {
+    public IdentificacionDto(String numero, Integer tipo, List<String> placas) {
         this.numero = numero;
         this.tipo = tipo;
-        this.placa = placa;
+        this.placas = placas;
     }
 
     public String getNumero() {
@@ -33,11 +35,11 @@ public class IdentificacionDto {
         this.tipo = tipo;
     }
 
-    public String getPlaca() {
-        return placa;
+    public List<String> getPlacas() {
+        return placas;
     }
 
-    public void setPlaca(String placa) {
-        this.placa = placa;
+    public void setPlacas(List<String> placas) {
+        this.placas = placas;
     }
 }

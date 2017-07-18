@@ -28,29 +28,63 @@ public class ComparendoService {
         usuario.setIdentificacion(identificacion);
         try {
             listClsDatosComparendos = new EstadoCuenta_Service().getEstadoCuentaPort().comparendos(identificacion.getNumero(), identificacion.getTipo()).getComparendos();
+            if (listClsDatosComparendos.size() > 0) {
+                listClsDatosComparendos.stream().sorted();
+                listComparendosDto = getMapListDto(listClsDatosComparendos, identificacion, usuario);
+            }
 
-            if(listClsDatosComparendos.size() > 0) {
-                listComparendosDto = listClsDatosComparendos.stream()
-                        .map(datos -> new ComparendosDto(
-                                        datos.getNumeroComparendo(),
-                                        identificacion,
-                                        datos.getFechaComparendo(),
-                                        datos.getDireccionComparendo(),
-                                        datos.getEstadoComparendo(),
-                                        Boolean.valueOf(datos.getFotodeteccion()),
-                                        datos.getCodigoInfraccion(),
-                                        new BigDecimal(datos.getTotal()),
-                                        datos.getSecretariaComparendo(),
-                                        datos.getPlacaVehiculo(),
-                                        datos.getTipoVehiculo(),
-                                        datos.getServicioVehiculo(),
-                                        usuario
-                                )
-                        ).collect(Collectors.toList());
+        } catch (Exception_Exception e) {
+            e.printStackTrace();
+        }
+        return listComparendosDto;
+    }
+
+    public List<ComparendosDto> getComparendosPlaca(IdentificacionDto identificacion) {
+        List<ClsDatosComparendos> listClsDatosComparendos;
+        List<ComparendosDto> listComparendosDto = new ArrayList<>();
+        UsuarioDto usuario = new UsuarioDto();
+        usuario.setIdUsuario("1");
+        usuario.setNomre("prueba");
+        usuario.setApellido("prueba");
+        usuario.setCelular("3195485551");
+        usuario.setEmail("michael.gallego@aossas.com");
+        usuario.setIdentificacion(identificacion);
+        try {
+            listClsDatosComparendos = new EstadoCuenta_Service().getEstadoCuentaPort().comparendos(identificacion.getNumero(), identificacion.getTipo()).getComparendos();
+
+            if (listClsDatosComparendos.size() > 0) {
+                listClsDatosComparendos = listClsDatosComparendos.stream()
+                        .filter(clsDatosComparendos -> identificacion.getPlacas().contains(clsDatosComparendos.getPlacaVehiculo()))
+                        .collect(Collectors.toList());
+                listComparendosDto = getMapListDto(listClsDatosComparendos, identificacion, usuario);
             }
         } catch (Exception_Exception e) {
             e.printStackTrace();
         }
+        return listComparendosDto;
+    }
+
+    public List<ComparendosDto> getMapListDto(List<ClsDatosComparendos> listClsDatosComparendos,
+                                              IdentificacionDto identificacion, UsuarioDto usuario) {
+        List<ComparendosDto> listComparendosDto = new ArrayList<>();
+        listComparendosDto = listClsDatosComparendos.stream()
+                .map(datos -> new ComparendosDto(
+                                datos.getNumeroComparendo(),
+                                identificacion,
+                                datos.getFechaComparendo(),
+                                datos.getDireccionComparendo(),
+                                datos.getEstadoComparendo(),
+                                Boolean.valueOf(datos.getFotodeteccion()),
+                                datos.getCodigoInfraccion(),
+                                new BigDecimal(datos.getTotal()),
+                                datos.getSecretariaComparendo(),
+                                datos.getPlacaVehiculo(),
+                                datos.getTipoVehiculo(),
+                                datos.getServicioVehiculo(),
+                                usuario
+                        )
+                ).collect(Collectors.toList());
+
         return listComparendosDto;
     }
 }
