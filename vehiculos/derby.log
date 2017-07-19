@@ -1,13 +1,13 @@
 ----------------------------------------------------------------
-Mon Jul 17 12:17:26 COT 2017:
-Booting Derby version The Apache Software Foundation - Apache Derby - 10.13.1.1 - (1765088): instance a816c00e-015d-518d-feea-000000c703e0 
-on database directory memory:C:\Users\Assist 02\Documents\NetBeansProjects\backend\vehiculos\testdb with class loader org.springframework.boot.loader.LaunchedURLClassLoader@12c9b19 
-Loaded from jar:file:/C:/Users/Assist%2002/Documents/NetBeansProjects/backend/vehiculos/target/vehiculos-0.0.1-SNAPSHOT.jar!/BOOT-INF/lib/derby-10.13.1.1.jar!/
+Mon Jul 17 22:53:03 UTC 2017:
+Booting Derby version The Apache Software Foundation - Apache Derby - 10.13.1.1 - (1765088): instance a816c00e-015d-52c1-43ea-0000018b5070 
+on database directory memory:/home/davmen91/repoLeasing/backend/vehiculos/testdb with class loader org.springframework.boot.loader.LaunchedURLClassLoader@3e3abc88 
+Loaded from jar:file:/home/davmen91/repoLeasing/backend/vehiculos/target/vehiculos-0.0.1-SNAPSHOT.jar!/BOOT-INF/lib/derby-10.13.1.1.jar!/
 java.vendor=Oracle Corporation
-java.runtime.version=1.8.0_131-b11
-user.dir=C:\Users\Assist 02\Documents\NetBeansProjects\backend\vehiculos
-os.name=Windows 10
-os.arch=x86
-os.version=10.0
+java.runtime.version=1.8.0_131-8u131-b11-2-b11
+user.dir=/home/davmen91/repoLeasing/backend/vehiculos
+os.name=Linux
+os.arch=amd64
+os.version=4.9.0-3-amd64
 derby.system.home=null
 Database Class Loader started - derby.database.classpath=''
