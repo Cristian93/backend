@@ -1,8 +1,8 @@
-package com.demo.springboot.demo.Services;
+package com.demo.springboot.demo.services;
 
-import com.demo.springboot.demo.Dto.ComparendosDto;
-import com.demo.springboot.demo.Dto.IdentificacionDto;
-import com.demo.springboot.demo.Dto.UsuarioDto;
+import com.demo.springboot.demo.dto.ComparendosDto;
+import com.demo.springboot.demo.dto.IdentificacionDto;
+import com.demo.springboot.demo.dto.UsuarioDto;
 import org.springframework.stereotype.Component;
 import servicios.ClsDatosComparendos;
 import servicios.EstadoCuenta_Service;

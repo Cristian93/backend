@@ -1,4 +1,4 @@
-package com.demo.springboot.demo.Dto;
+package com.demo.springboot.demo.dto;
 
 public class UsuarioDto {
 

@@ -1,8 +1,8 @@
-package com.demo.springboot.demo.ResourceController;
+package com.demo.springboot.demo.resourceController;
 
-import com.demo.springboot.demo.Dto.ComparendosDto;
-import com.demo.springboot.demo.Dto.IdentificacionDto;
-import com.demo.springboot.demo.Services.ComparendoService;
+import com.demo.springboot.demo.dto.ComparendosDto;
+import com.demo.springboot.demo.dto.IdentificacionDto;
+import com.demo.springboot.demo.services.ComparendoService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
