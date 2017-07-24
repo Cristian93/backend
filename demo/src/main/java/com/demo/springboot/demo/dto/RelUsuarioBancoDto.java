@@ -1,6 +1,4 @@
-package com.demo.springboot.demo.Dto;
-
-import javax.annotation.Resource;
+package com.demo.springboot.demo.dto;
 
 public class RelUsuarioBancoDto {
 

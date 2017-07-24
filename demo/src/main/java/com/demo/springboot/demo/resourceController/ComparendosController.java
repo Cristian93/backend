@@ -1,8 +1,8 @@
-package com.demo.springboot.demo.ResourceController;
+package com.demo.springboot.demo.resourceController;
 
-import com.demo.springboot.demo.Dto.ComparendosDto;
-import com.demo.springboot.demo.Dto.IdentificacionDto;
-import com.demo.springboot.demo.Services.ComparendoService;
+import com.demo.springboot.demo.dto.ComparendosDto;
+import com.demo.springboot.demo.dto.IdentificacionDto;
+import com.demo.springboot.demo.services.ComparendoService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -40,13 +40,14 @@ public class ComparendosController {
 
     @PostMapping
     @CrossOrigin
+
     public List<ComparendosDto> getComparendos(@RequestBody IdentificacionDto identificacion) {
-        LOGGER.info("Este es el Log");
+        LOGGER.info("Ingreso a control de comparendos");
         List<ComparendosDto> listComparendosDto = new ArrayList<>();
-        identificacion.getPlacas().forEach((placa) -> System.out.println("placa : " + placa ));
+        LOGGER.info("Placas a consultar: " + identificacion.getPlacas());
 
         if (identificacion.getTipo() != null && identificacion.getNumero() != null) {
-            if(identificacion.getPlacas().size() > 0){
+            if(identificacion.getPlacas().size() > 0 && identificacion.getPlacas() != null){
                 listComparendosDto = comparendoService.getComparendosPlaca(identificacion);
             }else{
                 listComparendosDto = comparendoService.getComparendos(identificacion);
