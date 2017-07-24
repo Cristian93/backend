@@ -14,6 +14,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 @RestController
+@RequestMapping("/comparendos")
 public class ComparendosController {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(ComparendosDto.class);
@@ -37,13 +38,19 @@ public class ComparendosController {
         return "Hi " + name;
     }
 
-    @PostMapping("/comparendos")
+    @PostMapping
+    @CrossOrigin
     public List<ComparendosDto> getComparendos(@RequestBody IdentificacionDto identificacion) {
         LOGGER.info("Este es el Log");
         List<ComparendosDto> listComparendosDto = new ArrayList<>();
+        identificacion.getPlacas().forEach((placa) -> System.out.println("placa : " + placa ));
 
         if (identificacion.getTipo() != null && identificacion.getNumero() != null) {
-            listComparendosDto = comparendoService.getComparendos(identificacion);
+            if(identificacion.getPlacas().size() > 0){
+                listComparendosDto = comparendoService.getComparendosPlaca(identificacion);
+            }else{
+                listComparendosDto = comparendoService.getComparendos(identificacion);
+            }
         }
         return listComparendosDto;
     }
