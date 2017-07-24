@@ -40,13 +40,14 @@ public class ComparendosController {
 
     @PostMapping
     @CrossOrigin
+
     public List<ComparendosDto> getComparendos(@RequestBody IdentificacionDto identificacion) {
-        LOGGER.info("Este es el Log");
+        LOGGER.info("Ingreso a control de comparendos");
         List<ComparendosDto> listComparendosDto = new ArrayList<>();
-        identificacion.getPlacas().forEach((placa) -> System.out.println("placa : " + placa ));
+        LOGGER.info("Placas a consultar: " + identificacion.getPlacas());
 
         if (identificacion.getTipo() != null && identificacion.getNumero() != null) {
-            if(identificacion.getPlacas().size() > 0){
+            if(identificacion.getPlacas().size() > 0 && identificacion.getPlacas() != null){
                 listComparendosDto = comparendoService.getComparendosPlaca(identificacion);
             }else{
                 listComparendosDto = comparendoService.getComparendos(identificacion);
