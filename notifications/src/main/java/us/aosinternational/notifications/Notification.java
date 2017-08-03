@@ -1,0 +1,89 @@
+/*
+ * To change this license header, choose License Headers in Project Properties.
+ * To change this template file, choose Tools | Templates
+ * and open the template in the editor.
+ */
+package us.aosinternational.notifications;
+
+import java.math.BigInteger;
+import us.aosinternational.notifications.entities.Customer;
+import us.aosinternational.notifications.entities.Fine;
+import us.aosinternational.notifications.entities.Tax;
+import us.aosinternational.notifications.entities.Vehicle;
+
+/**
+ *
+ * @author Cristian David Franco Garcia
+ */
+public class Notification {
+
+    private BigInteger notificationDate;
+    private String type;
+    private Vehicle vehicle;
+    private Customer customer;
+    private Fine fine;
+    private Tax tax;
+
+    public Notification() {
+
+    }
+
+    public Notification(BigInteger notificationDate, String type, Vehicle vehicle, Customer customer, Fine fine, Tax tax) {
+        super();
+        this.notificationDate = notificationDate;
+        this.type = type;
+        this.vehicle = vehicle;
+        this.customer = customer;
+        this.fine = fine;
+        this.tax = tax;
+    }
+
+    public BigInteger getNotificationDate() {
+        return notificationDate;
+    }
+
+    public void setNotificationDate(BigInteger notificationDate) {
+        this.notificationDate = notificationDate;
+    }
+
+    public String getType() {
+        return type;
+    }
+
+    public void setType(String type) {
+        this.type = type;
+    }
+
+    public Vehicle getVehicle() {
+        return vehicle;
+    }
+
+    public void setVehicle(Vehicle vehicle) {
+        this.vehicle = vehicle;
+    }
+
+    public Customer getCustomer() {
+        return customer;
+    }
+
+    public void setCustomer(Customer customer) {
+        this.customer = customer;
+    }
+
+    public Fine getFine() {
+        return fine;
+    }
+
+    public void setFine(Fine fine) {
+        this.fine = fine;
+    }
+
+    public Tax getTax() {
+        return tax;
+    }
+
+    public void setTax(Tax tax) {
+        this.tax = tax;
+    }
+
+}

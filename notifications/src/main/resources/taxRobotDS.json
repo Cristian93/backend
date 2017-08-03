@@ -1,0 +1,12 @@
+{
+  "type": "service_account",
+  "project_id": "taxrobot-51cb8",
+  "private_key_id": "5ab540507335a66b75541d4ba4d290938ab12c7c",
+  "private_key": "-----BEGIN PRIVATE KEY-----\nMIIEvAIBADANBgkqhkiG9w0BAQEFAASCBKYwggSiAgEAAoIBAQCkChPikdlwafCl\nS5VTgWwSbDAN7c6N1kM5wbvU9C+MS9mjmo4ldxFvJBPGPJd9jsdyyAOEHDmXHNzi\nGZ7ALQ/WNA8Iuk9+QOghoTB2PdfvJO6jo0CQQawQdSALOGtTCFaCWQZv91MPySm4\nWmrVhPtJpV8rR8H3BSmEWgYaOyN7rLG0A2BJ58EfZnK95/1R3KhGvypSu+Xw5Fy5\nzB/o3qDEQPi/Dh0xUXrVc9nfitKmAXJSwuHqoiOp6i/xP+C1lY4pweca+bNKbE1a\nznd3wU5FiFOuE6KMm+4oR0zhBzvUwldT05n+Yy/JG2T+Ms7ZfKzZpr+PjGpb4ldN\nxwMtRSJHAgMBAAECggEACP/uQe4aRJZ2yirQs4BLQlAPxt9JUM6G+6uCEsVVuVgN\nISlumQrAAfkhvSytkC3HChYWSideRX+1dO0FfDw8quhKRJS+eS6j3/osrFbpHza1\nE+Ks4bQWY5cLvgQi1PhgkPJ624FxgHXIxXgT45Itd8eeeJ77FkulfnfXE97FUJih\ntfHCjw8AYoqX1BXWzn8CyJ5tBwSn/nB3t3ELcdPzGSPUYnCES+6i/QpW+enSZnEH\nMpLOD/fF23sY/AUVOW9qCD25gLqoh5CsX8bmf9BmC885/pQpY4F/+pprE7rrvpMx\nTP3r/YIj3yB3/nMHoox1DeF9LgIgpOq+94reWBQ3oQKBgQDVA9+YkajlKxFPMOVR\nQ545wfbs1MogyHrJR0Ot4N1zNEC85mufJl/F5emEASGieKo3566swzSPC9wWtxaa\nFCVCGifMMT4jRZxox5tDUFaVCYHlDCiryfbMKoJ6RlW4aL7/6GyTwEGMtqxOShMS\n33NPt34j3Q0EtcK4zZH4+1yXEQKBgQDFJCuYtgI3mW8J/jg91ib8x5o9kn4U4ihD\n9zFy39c/SNuztysPYNCGDyEVDL6/J+YuIRfYJ3hlFEyJhP8WqrXGK8DA9O4N9qt2\nu/T8pkUMkBTJnjG3pq6bvm9LjNSE/mG4GB/y8p74c2R7TZNn4/qP+cp9R8TunJiF\n1dnANowT1wKBgGxDrLghiCL5sbF7G4IjCN84KyURva3N10JHuyk7ubHc4+5eemKI\nIXM2uGnEHXEzPOhvE4NxL1xo3bKZ2Z30ET+4hXOtr3RD5AwJL2uWAHt9OozMkjtF\nye7YyDoXV2gDrNfqLI0n0OkQyyB7W5hjA3uHuk/GAODc9Jvyt3dBYjzRAoGAVdLo\nU+Qw1OmsKIqPC4SWloeDA3kqAIdwhh4wXdVLDNb4JqYATgKU5Tfi7BoPVILXN4/a\npJSSWlba9yd6MfEBj5Nup9I5bMTNYrRy9CaietSi6B9Bf7VF4LGoHBjkUD26Zv3B\nsu+i+4Co5vEf0iOy6kkRuTasakCsOd+em4pjsyMCgYBhqPc1/9tiaj6wPmY5/4aP\nPgFT07S2o6NbVFgkaU8w5oSxWdw/5tnaFg8PnbOEG34agtSqQNPCm1MJB+eD+SOG\noT9oYlRBWRmiOrcvdIzRIDBMrgphF+67KK8eYT1UhS9kQnuyq6nsR68eX0PkzS33\nznjlddGFqw0r5BDLLxxUlg==\n-----END PRIVATE KEY-----\n",
+  "client_email": "datastore@taxrobot-51cb8.iam.gserviceaccount.com",
+  "client_id": "108096261655978471556",
+  "auth_uri": "https://accounts.google.com/o/oauth2/auth",
+  "token_uri": "https://accounts.google.com/o/oauth2/token",
+  "auth_provider_x509_cert_url": "https://www.googleapis.com/oauth2/v1/certs",
+  "client_x509_cert_url": "https://www.googleapis.com/robot/v1/metadata/x509/datastore%40taxrobot-51cb8.iam.gserviceaccount.com"
+}

@@ -5,39 +5,67 @@
  */
 package us.aosinternational.notifications.SMS;
 
+import us.aosinternational.notifications.entities.Customer;
+import us.aosinternational.notifications.entities.Fine;
+import us.aosinternational.notifications.entities.Tax;
+import us.aosinternational.notifications.entities.Vehicle;
+
 /**
  *
  * @author Cristian David Franco Garcia
  */
 public class SMS {
 
-    private String to;
-    private String text;
+    private Vehicle vehicle;
+
+    private Customer customer;
+
+    private Fine fine;
+
+    private Tax tax;
 
     public SMS() {
 
     }
 
-    public SMS(String to, String text) {
+    public SMS(Vehicle vehicle, Customer customer, Fine fine, Tax tax) {
         super();
-        this.to = to;
-        this.text = text;
+        this.vehicle = vehicle;
+        this.customer = customer;
+        this.fine = fine;
+        this.tax = tax;
     }
 
-    public String getTo() {
-        return to;
+    public Vehicle getVehicle() {
+        return vehicle;
     }
 
-    public void setTo(String to) {
-        this.to = to;
+    public void setVehicle(Vehicle vehicle) {
+        this.vehicle = vehicle;
     }
 
-    public String getText() {
-        return text;
+    public Customer getCustomer() {
+        return customer;
     }
 
-    public void setText(String text) {
-        this.text = text;
+    public void setCustomer(Customer customer) {
+        this.customer = customer;
+    }
+
+    public Fine getFine() {
+        return fine;
+    }
+
+    public void setFine(Fine fine) {
+        this.fine = fine;
+    }
+
+    public Tax getTax() {
+        return tax;
+    }
+
+    public void setTax(Tax tax) {
+        this.tax = tax;
     }
 
 }

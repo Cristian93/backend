@@ -1,13 +1,17 @@
-/*
- * To change this license header, choose License Headers in Project Properties.
- * To change this template file, choose Tools | Templates
- * and open the template in the editor.
- */
 package us.aosinternational.notifications.email;
 
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.List;
+import com.google.cloud.datastore.Datastore;
+import com.google.cloud.datastore.Entity;
+import com.google.cloud.datastore.FullEntity;
+import com.google.cloud.datastore.IncompleteKey;
+import com.google.cloud.datastore.Key;
+import com.google.cloud.datastore.KeyFactory;
+import com.google.cloud.datastore.Query;
+import com.google.cloud.datastore.QueryResults;
+import java.io.IOException;
+import java.text.SimpleDateFormat;
+import java.util.Calendar;
+import java.util.Date;
 import java.util.Properties;
 import javax.mail.Message;
 import javax.mail.Session;
@@ -15,6 +19,9 @@ import javax.mail.Transport;
 import javax.mail.internet.InternetAddress;
 import javax.mail.internet.MimeMessage;
 import org.springframework.stereotype.Service;
+import us.aosinternational.notifications.connectDS.GoogleDataStoreComponent;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  *
@@ -23,24 +30,75 @@ import org.springframework.stereotype.Service;
 @Service
 public class EmailService {
 
-    private List<Email> emailss = new ArrayList<>(Arrays.asList(new Email("cristian.franco@aossas.com", "Pago de Multa", "Paguela")));
+    private static final Logger LOGGER = LoggerFactory.getLogger(EmailService.class);
 
-    public List<Email> getEmails() {
+    private final Datastore datastore;
 
-        return emailss;
+    public EmailService() {
+        GoogleDataStoreComponent googleDataStoreComponent = new GoogleDataStoreComponent();
+        this.datastore = googleDataStoreComponent.getDatastore();
     }
 
-    //Crear Email
-    public void sendEmail(Email[] emails) {
+    /*private List<Email> emailss = new ArrayList<>(Arrays.asList(
+            new Email(
+                    new Vehicle("ARD578", "Bogotá D.C"),
+                    new Customer("Cédula de Ciudadanía", "1072654329", "Carlos", "Perez", "cristian.franco@aossas.com", "+573192518252"),
+                    new Fine("0", "Medellin", new BigInteger("1501105618416"), "Conducir un vehículo sin luces o con alguna de ellas dañada", 300654),
+                    new Tax("0", "Bogotá D.C.", 110000)
+            ),
+            new Email(
+                    new Vehicle("DRD763", "Bogotá D.C"),
+                    new Customer("Cédula de Ciudadanía", "2072654329", "Alberto", "Lopez", "cristian.franco@aossas.com", "+573192518252"),
+                    new Fine("0", "Barranquilla", new BigInteger("1501105618416"), "Conducir en estado de embriaguez, con grado 3 y primera reincidencia", 1897654),
+                    new Tax()
+            ),
+            new Email(
+                    new Vehicle("XFR987", "Bogotá D.C"),
+                    new Customer("Cédula de Ciudadanía", "3072654329", "Sandra", "Bolaños", "cristian.franco@aossas.com", "+573192518252"),
+                    new Fine(),
+                    new Tax("0", "Bogotá D.C.", 110000)
+            )
+    ));*/
+ /*public List<Email> getEmails() {
 
-        //emails.add(email);
-        for (int i = 0; i < emails.length; i++) {
+        return emailss;
+    }*/
+    public void sendEmail(Email[] emails) throws IOException {
 
+        Query<Entity> query = Query.newEntityQueryBuilder().setKind("parametrization").build();
+
+        QueryResults<Entity> results = datastore.run(query);
+
+        Entity entity = results.next();
+
+        for (Email email : emails) {
+            String subject = "";
+            String contentText = "";
+            //Fine
+            if (!email.getFine().getId().equals("")) {
+                //Calcular fechas de la infraccion para el pago de la multa
+                //Fecha maxima descuesto del 50%
+                Calendar paymentDateWithCourse50 = Calendar.getInstance();
+                paymentDateWithCourse50.setTime(new Date(email.getFine().getInfringementDate().longValue()));
+                paymentDateWithCourse50.add(Calendar.DAY_OF_YEAR, 5);
+                //Fecha maxima descuesto del 25%
+                Calendar paymentDateWithCourse25 = Calendar.getInstance();
+                paymentDateWithCourse25.setTime(new Date(email.getFine().getInfringementDate().longValue()));
+                paymentDateWithCourse25.add(Calendar.DAY_OF_YEAR, 20);
+                //Fecha maxima del pago
+                Calendar paymentDateWithoutCourse = Calendar.getInstance();
+                paymentDateWithoutCourse.setTime(new Date(email.getFine().getInfringementDate().longValue()));
+                paymentDateWithoutCourse.add(Calendar.DAY_OF_YEAR, 30);
+                subject = entity.getString("customerEmailSubject").replace("${licensePlate}", email.getVehicle().getLicensePlate()).replace("${leasing}", "0003456").replace("${bank}", "Grupo Bancolombia");
+                contentText = entity.getString("customerEmailTemplate").replace("${customerEmailContentText}", entity.getString("customerEmailContentText").replace("${secretariat}", email.getFine().getSecretariat()).replace("${infringementDate}", new SimpleDateFormat("dd-MM-yyyy").format(new Date(email.getFine().getInfringementDate().longValue()))).replace("${licensePlate}", email.getVehicle().getLicensePlate()).replace("${leasing}", "0003456").replace("${bank}", "Grupo Bancolombia").replace("${infringementDescription}", email.getFine().getInfringementDescription()).replace("${paymentDateWithCourse50}", new SimpleDateFormat("dd-MM-yyyy").format(paymentDateWithCourse50.getTimeInMillis())).replace("${amountPayWithCourse50}", String.valueOf(email.getFine().getAmountPayWithoutCourse() / 2)).replace("${paymentDateWithCourse25}", new SimpleDateFormat("dd-MM-yyyy").format(paymentDateWithCourse25.getTimeInMillis())).replace("${amountPayWithCourse25}", String.valueOf(email.getFine().getAmountPayWithoutCourse() - ((email.getFine().getAmountPayWithoutCourse() / 100) * 25))).replace("${paymentDateWithoutCourse}", new SimpleDateFormat("dd-MM-yyyy").format(paymentDateWithoutCourse.getTimeInMillis())).replace("${amountPayWithoutCourse}", Long.toString(email.getFine().getAmountPayWithoutCourse())).replace("${email}", "leasing@grupobancolombia.com.co").replace("${telephone}", "54 3459876").replaceAll("(\\r|\\n)", "<br>"));
+            } //Tax
+            else {
+                subject = "asunto impuesto";
+                contentText = entity.getString("customerEmailTemplate").replace("${customerEmailContentText}", entity.getString("customerEmailContentText").replace("${secretariat}", email.getFine().getSecretariat()).replace("${infringementDate}", new SimpleDateFormat("dd-MM-yyyy").format(new Date(email.getFine().getInfringementDate().longValue()))).replace("${licensePlate}", email.getVehicle().getLicensePlate()).replace("${leasing}", "0003456").replace("${bank}", "Grupo Bancolombia").replace("${infringementDescription}", email.getFine().getInfringementDescription()).replace("${amountPayWithCourse50}", String.valueOf(email.getFine().getAmountPayWithoutCourse() / 2)).replace("${amountPayWithCourse25}", String.valueOf(email.getFine().getAmountPayWithoutCourse() - ((email.getFine().getAmountPayWithoutCourse() / 100) * 25))).replace("${amountPayWithoutCourse}", Long.toString(email.getFine().getAmountPayWithoutCourse())).replace("${email}", "leasing@grupobancolombia.com.co").replace("${telephone}", "54 3459876").replaceAll("(\\r|\\n)", "<br>"));
+            }
             //Enviar mensaje
             try {
-
                 String FROM = "cristiandavidfrancogarcia@gmail.com";
-
                 Properties props = new Properties();
                 props.setProperty("mail.smtp.host", "smtp.gmail.com");
                 props.setProperty("mail.smtp.ssl.enable", "true");
@@ -48,773 +106,104 @@ public class EmailService {
                 props.setProperty("mail.smtp.auth", "true");
                 props.setProperty("mail.smtp.port", "465");
                 props.setProperty("mail.smtp.user", FROM);
-
                 // Preparamos la sesion
                 Session session = Session.getDefaultInstance(props);
-
                 // Construimos el mensaje
                 MimeMessage message = new MimeMessage(session);
                 message.setFrom(new InternetAddress(FROM));
-                message.addRecipient(Message.RecipientType.TO, new InternetAddress(
-                        emails[i].getTo()));
-                message.setSubject(emails[i].getSubject());
-                //message.setText(emails[i].getText());
-
-                String header = "<!doctype html>\n"
-                        + "<html xmlns=\"http://www.w3.org/1999/xhtml\" xmlns:v=\"urn:schemas-microsoft-com:vml\" xmlns:o=\"urn:schemas-microsoft-com:office:office\">\n"
-                        + "	<head>\n"
-                        + "\n"
-                        + "		<meta charset=\"UTF-8\">\n"
-                        + "        <meta http-equiv=\"X-UA-Compatible\" content=\"IE=edge\">\n"
-                        + "        <meta name=\"viewport\" content=\"width=device-width, initial-scale=1\">\n"
-                        + "		<title>*|MC:SUBJECT|*</title>\n"
-                        + "\n"
-                        + "    <style type=\"text/css\">\n"
-                        + "		p{\n"
-                        + "			margin:10px 0;\n"
-                        + "			padding:0;\n"
-                        + "		}\n"
-                        + "		table{\n"
-                        + "			border-collapse:collapse;\n"
-                        + "		}\n"
-                        + "		h1,h2,h3,h4,h5,h6{\n"
-                        + "			display:block;\n"
-                        + "			margin:0;\n"
-                        + "			padding:0;\n"
-                        + "		}\n"
-                        + "		img,a img{\n"
-                        + "			border:0;\n"
-                        + "			height:auto;\n"
-                        + "			outline:none;\n"
-                        + "			text-decoration:none;\n"
-                        + "		}\n"
-                        + "		body,#bodyTable,#bodyCell{\n"
-                        + "			height:100%;\n"
-                        + "			margin:0;\n"
-                        + "			padding:0;\n"
-                        + "			width:100%;\n"
-                        + "		}\n"
-                        + "		.mcnPreviewText{\n"
-                        + "			display:none !important;\n"
-                        + "		}\n"
-                        + "		#outlook a{\n"
-                        + "			padding:0;\n"
-                        + "		}\n"
-                        + "		img{\n"
-                        + "			-ms-interpolation-mode:bicubic;\n"
-                        + "		}\n"
-                        + "		table{\n"
-                        + "			mso-table-lspace:0pt;\n"
-                        + "			mso-table-rspace:0pt;\n"
-                        + "		}\n"
-                        + "		.ReadMsgBody{\n"
-                        + "			width:100%;\n"
-                        + "		}\n"
-                        + "		.ExternalClass{\n"
-                        + "			width:100%;\n"
-                        + "		}\n"
-                        + "		p,a,li,td,blockquote{\n"
-                        + "			mso-line-height-rule:exactly;\n"
-                        + "		}\n"
-                        + "		a[href^=tel],a[href^=sms]{\n"
-                        + "			color:inherit;\n"
-                        + "			cursor:default;\n"
-                        + "			text-decoration:none;\n"
-                        + "		}\n"
-                        + "		p,a,li,td,body,table,blockquote{\n"
-                        + "			-ms-text-size-adjust:100%;\n"
-                        + "			-webkit-text-size-adjust:100%;\n"
-                        + "		}\n"
-                        + "		.ExternalClass,.ExternalClass p,.ExternalClass td,.ExternalClass div,.ExternalClass span,.ExternalClass font{\n"
-                        + "			line-height:100%;\n"
-                        + "		}\n"
-                        + "		a[x-apple-data-detectors]{\n"
-                        + "			color:inherit !important;\n"
-                        + "			text-decoration:none !important;\n"
-                        + "			font-size:inherit !important;\n"
-                        + "			font-family:inherit !important;\n"
-                        + "			font-weight:inherit !important;\n"
-                        + "			line-height:inherit !important;\n"
-                        + "		}\n"
-                        + "		.templateContainer{\n"
-                        + "			max-width:600px !important;\n"
-                        + "		}\n"
-                        + "		a.mcnButton{\n"
-                        + "			display:block;\n"
-                        + "		}\n"
-                        + "		.mcnImage{\n"
-                        + "			vertical-align:bottom;\n"
-                        + "		}\n"
-                        + "		.mcnTextContent{\n"
-                        + "			word-break:break-word;\n"
-                        + "		}\n"
-                        + "		.mcnTextContent img{\n"
-                        + "			height:auto !important;\n"
-                        + "		}\n"
-                        + "		.mcnDividerBlock{\n"
-                        + "			table-layout:fixed !important;\n"
-                        + "		}\n"
-                        + "\n"
-                        + "		h1{\n"
-                        + "			color:#222222;\n"
-                        + "			font-family:Helvetica;\n"
-                        + "			font-size:40px;\n"
-                        + "			font-style:normal;\n"
-                        + "			font-weight:bold;\n"
-                        + "			line-height:150%;\n"
-                        + "			letter-spacing:normal;\n"
-                        + "			text-align:center;\n"
-                        + "		}\n"
-                        + "\n"
-                        + "		h2{\n"
-                        + "			color:#222222;\n"
-                        + "			font-family:Helvetica;\n"
-                        + "			font-size:34px;\n"
-                        + "			font-style:normal;\n"
-                        + "			font-weight:bold;\n"
-                        + "			line-height:150%;\n"
-                        + "			letter-spacing:normal;\n"
-                        + "			text-align:left;\n"
-                        + "		}\n"
-                        + "\n"
-                        + "		h3{\n"
-                        + "			color:#444444;\n"
-                        + "			font-family:Helvetica;\n"
-                        + "			font-size:22px;\n"
-                        + "			font-style:normal;\n"
-                        + "			font-weight:bold;\n"
-                        + "			line-height:150%;\n"
-                        + "			letter-spacing:normal;\n"
-                        + "			text-align:center;\n"
-                        + "		}\n"
-                        + "\n"
-                        + "		h4{\n"
-                        + "			color:#999999;\n"
-                        + "			font-family:Georgia;\n"
-                        + "			font-size:20px;\n"
-                        + "			font-style:italic;\n"
-                        + "			font-weight:normal;\n"
-                        + "			line-height:125%;\n"
-                        + "			letter-spacing:normal;\n"
-                        + "			text-align:left;\n"
-                        + "		}\n"
-                        + "\n"
-                        + "		#templateHeader{\n"
-                        + "			background-color:#F7F7F7;\n"
-                        + "			background-image:none;\n"
-                        + "			background-repeat:no-repeat;\n"
-                        + "			background-position:50% 50%;\n"
-                        + "			background-size:contain;\n"
-                        + "			border-top:0;\n"
-                        + "			border-bottom:0;\n"
-                        + "			padding-top:0px;\n"
-                        + "			padding-bottom:0px;\n"
-                        + "		}\n"
-                        + "\n"
-                        + "		.headerContainer{\n"
-                        + "			background-color:transparent;\n"
-                        + "			background-image:none;\n"
-                        + "			background-repeat:no-repeat;\n"
-                        + "			background-position:center;\n"
-                        + "			background-size:cover;\n"
-                        + "			border-top:0;\n"
-                        + "			border-bottom:0;\n"
-                        + "			padding-top:0;\n"
-                        + "			padding-bottom:0;\n"
-                        + "		}\n"
-                        + "\n"
-                        + "		.headerContainer .mcnTextContent,.headerContainer .mcnTextContent p{\n"
-                        + "			color:#808080;\n"
-                        + "			font-family:Helvetica;\n"
-                        + "			font-size:16px;\n"
-                        + "			line-height:150%;\n"
-                        + "			text-align:left;\n"
-                        + "		}\n"
-                        + "\n"
-                        + "		.headerContainer .mcnTextContent a,.headerContainer .mcnTextContent p a{\n"
-                        + "			color:#00ADD8;\n"
-                        + "			font-weight:normal;\n"
-                        + "			text-decoration:underline;\n"
-                        + "		}\n"
-                        + "\n"
-                        + "		#templateBody{\n"
-                        + "			background-color:#FFFFFF;\n"
-                        + "			background-image:none;\n"
-                        + "			background-repeat:no-repeat;\n"
-                        + "			background-position:center;\n"
-                        + "			background-size:cover;\n"
-                        + "			border-top:0;\n"
-                        + "			border-bottom:0;\n"
-                        + "			padding-top:27px;\n"
-                        + "			padding-bottom:54px;\n"
-                        + "		}\n"
-                        + "\n"
-                        + "		.bodyContainer{\n"
-                        + "			background-color:transparent;\n"
-                        + "			background-image:none;\n"
-                        + "			background-repeat:no-repeat;\n"
-                        + "			background-position:center;\n"
-                        + "			background-size:cover;\n"
-                        + "			border-top:0;\n"
-                        + "			border-bottom:0;\n"
-                        + "			padding-top:0;\n"
-                        + "			padding-bottom:0;\n"
-                        + "		}\n"
-                        + "\n"
-                        + "		.bodyContainer .mcnTextContent,.bodyContainer .mcnTextContent p{\n"
-                        + "			color:#808080;\n"
-                        + "			font-family:Helvetica;\n"
-                        + "			font-size:16px;\n"
-                        + "			line-height:150%;\n"
-                        + "			text-align:left;\n"
-                        + "		}\n"
-                        + "\n"
-                        + "		.bodyContainer .mcnTextContent a,.bodyContainer .mcnTextContent p a{\n"
-                        + "			color:#00ADD8;\n"
-                        + "			font-weight:normal;\n"
-                        + "			text-decoration:underline;\n"
-                        + "		}\n"
-                        + "\n"
-                        + "		#templateFooter{\n"
-                        + "			background-color:#333333;\n"
-                        + "			background-image:none;\n"
-                        + "			background-repeat:no-repeat;\n"
-                        + "			background-position:center;\n"
-                        + "			background-size:cover;\n"
-                        + "			border-top:0;\n"
-                        + "			border-bottom:0;\n"
-                        + "			padding-top:45px;\n"
-                        + "			padding-bottom:63px;\n"
-                        + "		}\n"
-                        + "\n"
-                        + "		.footerContainer{\n"
-                        + "			background-color:transparent;\n"
-                        + "			background-image:none;\n"
-                        + "			background-repeat:no-repeat;\n"
-                        + "			background-position:center;\n"
-                        + "			background-size:cover;\n"
-                        + "			border-top:0;\n"
-                        + "			border-bottom:0;\n"
-                        + "			padding-top:0;\n"
-                        + "			padding-bottom:0;\n"
-                        + "		}\n"
-                        + "\n"
-                        + "		.footerContainer .mcnTextContent,.footerContainer .mcnTextContent p{\n"
-                        + "			color:#FFFFFF;\n"
-                        + "			font-family:Helvetica;\n"
-                        + "			font-size:12px;\n"
-                        + "			line-height:150%;\n"
-                        + "			text-align:center;\n"
-                        + "		}\n"
-                        + "\n"
-                        + "		.footerContainer .mcnTextContent a,.footerContainer .mcnTextContent p a{\n"
-                        + "			color:#FFFFFF;\n"
-                        + "			font-weight:normal;\n"
-                        + "			text-decoration:underline;\n"
-                        + "		}\n"
-                        + "	@media only screen and (min-width:768px){\n"
-                        + "		.templateContainer{\n"
-                        + "			width:600px !important;\n"
-                        + "		}\n"
-                        + "\n"
-                        + "}	@media only screen and (max-width: 480px){\n"
-                        + "		body,table,td,p,a,li,blockquote{\n"
-                        + "			-webkit-text-size-adjust:none !important;\n"
-                        + "		}\n"
-                        + "\n"
-                        + "}	@media only screen and (max-width: 480px){\n"
-                        + "		body{\n"
-                        + "			width:100% !important;\n"
-                        + "			min-width:100% !important;\n"
-                        + "		}\n"
-                        + "\n"
-                        + "}	@media only screen and (max-width: 480px){\n"
-                        + "		.mcnImage{\n"
-                        + "			width:100% !important;\n"
-                        + "		}\n"
-                        + "\n"
-                        + "}	@media only screen and (max-width: 480px){\n"
-                        + "		.mcnCartContainer,.mcnCaptionTopContent,.mcnRecContentContainer,.mcnCaptionBottomContent,.mcnTextContentContainer,.mcnBoxedTextContentContainer,.mcnImageGroupContentContainer,.mcnCaptionLeftTextContentContainer,.mcnCaptionRightTextContentContainer,.mcnCaptionLeftImageContentContainer,.mcnCaptionRightImageContentContainer,.mcnImageCardLeftTextContentContainer,.mcnImageCardRightTextContentContainer{\n"
-                        + "			max-width:100% !important;\n"
-                        + "			width:100% !important;\n"
-                        + "		}\n"
-                        + "\n"
-                        + "}	@media only screen and (max-width: 480px){\n"
-                        + "		.mcnBoxedTextContentContainer{\n"
-                        + "			min-width:100% !important;\n"
-                        + "		}\n"
-                        + "\n"
-                        + "}	@media only screen and (max-width: 480px){\n"
-                        + "		.mcnImageGroupContent{\n"
-                        + "			padding:9px !important;\n"
-                        + "		}\n"
-                        + "\n"
-                        + "}	@media only screen and (max-width: 480px){\n"
-                        + "		.mcnCaptionLeftContentOuter .mcnTextContent,.mcnCaptionRightContentOuter .mcnTextContent{\n"
-                        + "			padding-top:9px !important;\n"
-                        + "		}\n"
-                        + "\n"
-                        + "}	@media only screen and (max-width: 480px){\n"
-                        + "		.mcnImageCardTopImageContent,.mcnCaptionBlockInner .mcnCaptionTopContent:last-child .mcnTextContent{\n"
-                        + "			padding-top:18px !important;\n"
-                        + "		}\n"
-                        + "\n"
-                        + "}	@media only screen and (max-width: 480px){\n"
-                        + "		.mcnImageCardBottomImageContent{\n"
-                        + "			padding-bottom:9px !important;\n"
-                        + "		}\n"
-                        + "\n"
-                        + "}	@media only screen and (max-width: 480px){\n"
-                        + "		.mcnImageGroupBlockInner{\n"
-                        + "			padding-top:0 !important;\n"
-                        + "			padding-bottom:0 !important;\n"
-                        + "		}\n"
-                        + "\n"
-                        + "}	@media only screen and (max-width: 480px){\n"
-                        + "		.mcnImageGroupBlockOuter{\n"
-                        + "			padding-top:9px !important;\n"
-                        + "			padding-bottom:9px !important;\n"
-                        + "		}\n"
-                        + "\n"
-                        + "}	@media only screen and (max-width: 480px){\n"
-                        + "		.mcnTextContent,.mcnBoxedTextContentColumn{\n"
-                        + "			padding-right:18px !important;\n"
-                        + "			padding-left:18px !important;\n"
-                        + "		}\n"
-                        + "\n"
-                        + "}	@media only screen and (max-width: 480px){\n"
-                        + "		.mcnImageCardLeftImageContent,.mcnImageCardRightImageContent{\n"
-                        + "			padding-right:18px !important;\n"
-                        + "			padding-bottom:0 !important;\n"
-                        + "			padding-left:18px !important;\n"
-                        + "		}\n"
-                        + "\n"
-                        + "}	@media only screen and (max-width: 480px){\n"
-                        + "		.mcpreview-image-uploader{\n"
-                        + "			display:none !important;\n"
-                        + "			width:100% !important;\n"
-                        + "		}\n"
-                        + "\n"
-                        + "}	@media only screen and (max-width: 480px){\n"
-                        + "\n"
-                        + "		h1{\n"
-                        + "			font-size:30px !important;\n"
-                        + "			line-height:125% !important;\n"
-                        + "		}\n"
-                        + "\n"
-                        + "}	@media only screen and (max-width: 480px){\n"
-                        + "\n"
-                        + "		h2{\n"
-                        + "			font-size:26px !important;\n"
-                        + "			line-height:125% !important;\n"
-                        + "		}\n"
-                        + "\n"
-                        + "}	@media only screen and (max-width: 480px){\n"
-                        + "\n"
-                        + "		h3{\n"
-                        + "			font-size:20px !important;\n"
-                        + "			line-height:150% !important;\n"
-                        + "		}\n"
-                        + "\n"
-                        + "}	@media only screen and (max-width: 480px){\n"
-                        + "\n"
-                        + "		h4{\n"
-                        + "			font-size:18px !important;\n"
-                        + "			line-height:150% !important;\n"
-                        + "		}\n"
-                        + "\n"
-                        + "}	@media only screen and (max-width: 480px){\n"
-                        + "\n"
-                        + "		.mcnBoxedTextContentContainer .mcnTextContent,.mcnBoxedTextContentContainer .mcnTextContent p{\n"
-                        + "			font-size:14px !important;\n"
-                        + "			line-height:150% !important;\n"
-                        + "		}\n"
-                        + "\n"
-                        + "}	@media only screen and (max-width: 480px){\n"
-                        + "\n"
-                        + "		.headerContainer .mcnTextContent,.headerContainer .mcnTextContent p{\n"
-                        + "			font-size:16px !important;\n"
-                        + "			line-height:150% !important;\n"
-                        + "		}\n"
-                        + "\n"
-                        + "}	@media only screen and (max-width: 480px){\n"
-                        + "\n"
-                        + "		.bodyContainer .mcnTextContent,.bodyContainer .mcnTextContent p{\n"
-                        + "			font-size:16px !important;\n"
-                        + "			line-height:150% !important;\n"
-                        + "		}\n"
-                        + "\n"
-                        + "}	@media only screen and (max-width: 480px){\n"
-                        + "Make the footer content text larger in size for better readability on small screens.\n"
-                        + "\n"
-                        + "		.footerContainer .mcnTextContent,.footerContainer .mcnTextContent p{\n"
-                        + "			font-size:14px !important;\n"
-                        + "			line-height:150% !important;\n"
-                        + "		}\n"
-                        + "\n"
-                        + "}</style></head>\n"
-                        + "    <body>\n"
-                        + "\n"
-                        + "	<span class=\"mcnPreviewText\" style=\"display:none; font-size:0px; line-height:0px; max-height:0px; max-width:0px; opacity:0; overflow:hidden; visibility:hidden; mso-hide:all;\">*|MC_PREVIEW_TEXT|*</span><!--<![endif]-->\n"
-                        + "\n"
-                        + "        <center>\n"
-                        + "            <table align=\"center\" border=\"0\" cellpadding=\"0\" cellspacing=\"0\" height=\"100%\" width=\"100%\" id=\"bodyTable\">\n"
-                        + "                <tr>\n"
-                        + "                    <td align=\"center\" valign=\"top\" id=\"bodyCell\">\n"
-                        + "\n"
-                        + "                        <table border=\"0\" cellpadding=\"0\" cellspacing=\"0\" width=\"100%\">\n"
-                        + "							<tr>\n"
-                        + "								<td align=\"center\" valign=\"top\" id=\"templateHeader\" data-template-container>\n"
-                        + "\n"
-                        + "									<table align=\"center\" border=\"0\" cellpadding=\"0\" cellspacing=\"0\" width=\"100%\" class=\"templateContainer\">\n"
-                        + "										<tr>\n"
-                        + "                                			<td valign=\"top\" class=\"headerContainer\"><table border=\"0\" cellpadding=\"0\" cellspacing=\"0\" width=\"100%\" class=\"mcnImageBlock\" style=\"min-width:100%;\">\n"
-                        + "    <tbody class=\"mcnImageBlockOuter\">\n"
-                        + "            <tr>\n"
-                        + "                <td valign=\"top\" style=\"padding:9px\" class=\"mcnImageBlockInner\">\n"
-                        + "                    <table align=\"left\" width=\"100%\" border=\"0\" cellpadding=\"0\" cellspacing=\"0\" class=\"mcnImageContentContainer\" style=\"min-width:100%;\">\n"
-                        + "                        <tbody><tr>\n"
-                        + "                            <td class=\"mcnImageContent\" valign=\"top\" style=\"padding-right: 9px; padding-left: 9px; padding-top: 0; padding-bottom: 0; text-align:center;\">\n"
-                        + "\n"
-                        + "\n"
-                        + "                                        <img align=\"center\" alt=\"\" src=\"https://gallery.mailchimp.com/57e7aa78f84e10cfe2da0ddd1/images/0b6af380-a0bc-4f6e-90f9-eabf15408c85.png\" width=\"120\" style=\"max-width:120px; padding-bottom: 0; display: inline !important; vertical-align: bottom;\" class=\"mcnImage\">\n"
-                        + "\n"
-                        + "\n"
-                        + "                            </td>\n"
-                        + "                        </tr>\n"
-                        + "                    </tbody></table>\n"
-                        + "                </td>\n"
-                        + "            </tr>\n"
-                        + "    </tbody>\n"
-                        + "</table></td>\n"
-                        + "										</tr>\n"
-                        + "									</table>\n"
-                        + "\n"
-                        + "								</td>\n"
-                        + "                            </tr>\n"
-                        + "							<tr>\n"
-                        + "								<td align=\"center\" valign=\"top\" id=\"templateBody\" data-template-container>\n"
-                        + "\n"
-                        + "									<table align=\"center\" border=\"0\" cellpadding=\"0\" cellspacing=\"0\" width=\"100%\" class=\"templateContainer\">\n"
-                        + "										<tr>\n"
-                        + "                                			<td valign=\"top\" class=\"bodyContainer\"><table border=\"0\" cellpadding=\"0\" cellspacing=\"0\" width=\"100%\" class=\"mcnTextBlock\" style=\"min-width:100%;\">\n"
-                        + "    <tbody class=\"mcnTextBlockOuter\">\n"
-                        + "        <tr>\n"
-                        + "            <td valign=\"top\" class=\"mcnTextBlockInner\" style=\"padding-top:9px;\">\n"
-                        + "\n"
-                        + "                <table align=\"left\" border=\"0\" cellpadding=\"0\" cellspacing=\"0\" style=\"max-width:100%; min-width:100%;\" width=\"100%\" class=\"mcnTextContentContainer\">\n"
-                        + "                    <tbody><tr>\n"
-                        + "\n"
-                        + "                        <td valign=\"top\" class=\"mcnTextContent\" style=\"padding-top:0; padding-right:18px; padding-bottom:9px; padding-left:18px;\">\n"
-                        + "\n"
-                        + "                            <h1>Tienes un compromiso pendiente con el SIMIT</h1>\n"
-                        + "\n"
-                        + "                        </td>\n"
-                        + "                    </tr>\n"
-                        + "                </tbody></table>\n"
-                        + "\n"
-                        + "            </td>\n"
-                        + "        </tr>\n"
-                        + "    </tbody>\n"
-                        + "</table><table border=\"0\" cellpadding=\"0\" cellspacing=\"0\" width=\"100%\" class=\"mcnDividerBlock\" style=\"min-width:100%;\">\n"
-                        + "    <tbody class=\"mcnDividerBlockOuter\">\n"
-                        + "        <tr>\n"
-                        + "            <td class=\"mcnDividerBlockInner\" style=\"min-width: 100%; padding: 18px 18px 0px;\">\n"
-                        + "                <table class=\"mcnDividerContent\" border=\"0\" cellpadding=\"0\" cellspacing=\"0\" width=\"100%\" style=\"min-width:100%;\">\n"
-                        + "                    <tbody><tr>\n"
-                        + "                        <td>\n"
-                        + "                            <span></span>\n"
-                        + "                        </td>\n"
-                        + "                    </tr>\n"
-                        + "                </tbody></table>\n"
-                        + "\n"
-                        + "            </td>\n"
-                        + "        </tr>\n"
-                        + "    </tbody>\n"
-                        + "</table><table border=\"0\" cellpadding=\"0\" cellspacing=\"0\" width=\"100%\" class=\"mcnImageBlock\" style=\"min-width:100%;\">\n"
-                        + "    <tbody class=\"mcnImageBlockOuter\">\n"
-                        + "            <tr>\n"
-                        + "                <td valign=\"top\" style=\"padding:9px\" class=\"mcnImageBlockInner\">\n"
-                        + "                    <table align=\"left\" width=\"100%\" border=\"0\" cellpadding=\"0\" cellspacing=\"0\" class=\"mcnImageContentContainer\" style=\"min-width:100%;\">\n"
-                        + "                        <tbody><tr>\n"
-                        + "                            <td class=\"mcnImageContent\" valign=\"top\" style=\"padding-right: 9px; padding-left: 9px; padding-top: 0; padding-bottom: 0; text-align:center;\">\n"
-                        + "\n"
-                        + "\n"
-                        + "                                        <img align=\"center\" alt=\"\" src=\"https://gallery.mailchimp.com/57e7aa78f84e10cfe2da0ddd1/images/59a47ba6-ad73-4738-8e1f-bbd410bededb.jpeg\" width=\"564\" style=\"max-width:930px; padding-bottom: 0; display: inline !important; vertical-align: bottom;\" class=\"mcnImage\">\n"
-                        + "\n"
-                        + "\n"
-                        + "                            </td>\n"
-                        + "                        </tr>\n"
-                        + "                    </tbody></table>\n"
-                        + "                </td>\n"
-                        + "            </tr>\n"
-                        + "    </tbody>\n"
-                        + "</table><table border=\"0\" cellpadding=\"0\" cellspacing=\"0\" width=\"100%\" class=\"mcnTextBlock\" style=\"min-width:100%;\">\n"
-                        + "    <tbody class=\"mcnTextBlockOuter\">\n"
-                        + "        <tr>\n"
-                        + "            <td valign=\"top\" class=\"mcnTextBlockInner\" style=\"padding-top:9px;\">\n"
-                        + "\n"
-                        + "                <table align=\"left\" border=\"0\" cellpadding=\"0\" cellspacing=\"0\" style=\"max-width:100%; min-width:100%;\" width=\"100%\" class=\"mcnTextContentContainer\">\n"
-                        + "                    <tbody><tr>\n"
-                        + "\n"
-                        + "                        <td valign=\"top\" class=\"mcnTextContent\" style=\"padding-top:0; padding-right:18px; padding-bottom:9px; padding-left:18px;\">";
-
-                String footer = "  </td>\n"
-                        + "                    </tr>\n"
-                        + "                </tbody></table>\n"
-                        + "\n"
-                        + "            </td>\n"
-                        + "        </tr>\n"
-                        + "    </tbody>\n"
-                        + "</table><table border=\"0\" cellpadding=\"0\" cellspacing=\"0\" width=\"100%\" class=\"mcnDividerBlock\" style=\"min-width:100%;\">\n"
-                        + "    <tbody class=\"mcnDividerBlockOuter\">\n"
-                        + "        <tr>\n"
-                        + "            <td class=\"mcnDividerBlockInner\" style=\"min-width: 100%; padding: 9px 18px 0px;\">\n"
-                        + "                <table class=\"mcnDividerContent\" border=\"0\" cellpadding=\"0\" cellspacing=\"0\" width=\"100%\" style=\"min-width:100%;\">\n"
-                        + "                    <tbody><tr>\n"
-                        + "                        <td>\n"
-                        + "                            <span></span>\n"
-                        + "                        </td>\n"
-                        + "                    </tr>\n"
-                        + "                </tbody></table>\n"
-                        + "\n"
-                        + "            </td>\n"
-                        + "        </tr>\n"
-                        + "    </tbody>\n"
-                        + "</table><table border=\"0\" cellpadding=\"0\" cellspacing=\"0\" width=\"100%\" class=\"mcnButtonBlock\" style=\"min-width:100%;\">\n"
-                        + "    <tbody class=\"mcnButtonBlockOuter\">\n"
-                        + "        <tr>\n"
-                        + "            <td style=\"padding-top:0; padding-right:18px; padding-bottom:18px; padding-left:18px;\" valign=\"top\" align=\"center\" class=\"mcnButtonBlockInner\">\n"
-                        + "                <table border=\"0\" cellpadding=\"0\" cellspacing=\"0\" class=\"mcnButtonContentContainer\" style=\"border-collapse: separate !important;border-radius: 3px;background-color: #42A5F5;\">\n"
-                        + "                    <tbody>\n"
-                        + "                        <tr>\n"
-                        + "                            <td align=\"center\" valign=\"middle\" class=\"mcnButtonContent\" style=\"font-family: Helvetica; font-size: 18px; padding: 18px;\">\n"
-                        + "                                <a class=\"mcnButton \" title=\"Pagar ahora\" href=\"https://consulta.simit.org.co/Simit/indexA.jsp\" target=\"_self\" style=\"font-weight: bold;letter-spacing: -0.5px;line-height: 100%;text-align: center;text-decoration: none;color: #FFFFFF;\">Pagar ahora</a>\n"
-                        + "                            </td>\n"
-                        + "                        </tr>\n"
-                        + "                    </tbody>\n"
-                        + "                </table>\n"
-                        + "            </td>\n"
-                        + "        </tr>\n"
-                        + "    </tbody>\n"
-                        + "</table><table border=\"0\" cellpadding=\"0\" cellspacing=\"0\" width=\"100%\" class=\"mcnDividerBlock\" style=\"min-width:100%;\">\n"
-                        + "    <tbody class=\"mcnDividerBlockOuter\">\n"
-                        + "        <tr>\n"
-                        + "            <td class=\"mcnDividerBlockInner\" style=\"min-width: 100%; padding: 18px 18px 0px;\">\n"
-                        + "                <table class=\"mcnDividerContent\" border=\"0\" cellpadding=\"0\" cellspacing=\"0\" width=\"100%\" style=\"min-width:100%;\">\n"
-                        + "                    <tbody><tr>\n"
-                        + "                        <td>\n"
-                        + "                            <span></span>\n"
-                        + "                        </td>\n"
-                        + "                    </tr>\n"
-                        + "                </tbody></table>\n"
-                        + "\n"
-                        + "            </td>\n"
-                        + "        </tr>\n"
-                        + "    </tbody>\n"
-                        + "</table></td>\n"
-                        + "										</tr>\n"
-                        + "									</table>\n"
-                        + "\n"
-                        + "								</td>\n"
-                        + "                            </tr>\n"
-                        + "                            <tr>\n"
-                        + "								<td align=\"center\" valign=\"top\" id=\"templateFooter\" data-template-container>\n"
-                        + "\n"
-                        + "									<table align=\"center\" border=\"0\" cellpadding=\"0\" cellspacing=\"0\" width=\"100%\" class=\"templateContainer\">\n"
-                        + "										<tr>\n"
-                        + "                                			<td valign=\"top\" class=\"footerContainer\"><table border=\"0\" cellpadding=\"0\" cellspacing=\"0\" width=\"100%\" class=\"mcnFollowBlock\" style=\"min-width:100%;\">\n"
-                        + "    <tbody class=\"mcnFollowBlockOuter\">\n"
-                        + "        <tr>\n"
-                        + "            <td align=\"center\" valign=\"top\" style=\"padding:9px\" class=\"mcnFollowBlockInner\">\n"
-                        + "                <table border=\"0\" cellpadding=\"0\" cellspacing=\"0\" width=\"100%\" class=\"mcnFollowContentContainer\" style=\"min-width:100%;\">\n"
-                        + "    <tbody><tr>\n"
-                        + "        <td align=\"center\" style=\"padding-left:9px;padding-right:9px;\">\n"
-                        + "            <table border=\"0\" cellpadding=\"0\" cellspacing=\"0\" width=\"100%\" style=\"min-width:100%;\" class=\"mcnFollowContent\">\n"
-                        + "                <tbody><tr>\n"
-                        + "                    <td align=\"center\" valign=\"top\" style=\"padding-top:9px; padding-right:9px; padding-left:9px;\">\n"
-                        + "                        <table align=\"center\" border=\"0\" cellpadding=\"0\" cellspacing=\"0\">\n"
-                        + "                            <tbody><tr>\n"
-                        + "                                <td align=\"center\" valign=\"top\">\n"
-                        + "\n"
-                        + "\n"
-                        + "\n"
-                        + "                                            <table align=\"left\" border=\"0\" cellpadding=\"0\" cellspacing=\"0\" style=\"display:inline;\">\n"
-                        + "                                                <tbody><tr>\n"
-                        + "                                                    <td valign=\"top\" style=\"padding-right:10px; padding-bottom:9px;\" class=\"mcnFollowContentItemContainer\">\n"
-                        + "                                                        <table border=\"0\" cellpadding=\"0\" cellspacing=\"0\" width=\"100%\" class=\"mcnFollowContentItem\">\n"
-                        + "                                                            <tbody><tr>\n"
-                        + "                                                                <td align=\"left\" valign=\"middle\" style=\"padding-top:5px; padding-right:10px; padding-bottom:5px; padding-left:9px;\">\n"
-                        + "                                                                    <table align=\"left\" border=\"0\" cellpadding=\"0\" cellspacing=\"0\" width=\"\">\n"
-                        + "                                                                        <tbody><tr>\n"
-                        + "\n"
-                        + "                                                                                <td align=\"center\" valign=\"middle\" width=\"24\" class=\"mcnFollowIconContent\">\n"
-                        + "                                                                                    <a href=\"http://www.facebook.com\" target=\"_blank\"><img src=\"https://cdn-images.mailchimp.com/icons/social-block-v2/outline-light-facebook-48.png\" style=\"display:block;\" height=\"24\" width=\"24\" class=\"\"></a>\n"
-                        + "                                                                                </td>\n"
-                        + "\n"
-                        + "\n"
-                        + "                                                                        </tr>\n"
-                        + "                                                                    </tbody></table>\n"
-                        + "                                                                </td>\n"
-                        + "                                                            </tr>\n"
-                        + "                                                        </tbody></table>\n"
-                        + "                                                    </td>\n"
-                        + "                                                </tr>\n"
-                        + "                                            </tbody></table>\n"
-                        + "\n"
-                        + "\n"
-                        + "\n"
-                        + "\n"
-                        + "                                            <table align=\"left\" border=\"0\" cellpadding=\"0\" cellspacing=\"0\" style=\"display:inline;\">\n"
-                        + "                                                <tbody><tr>\n"
-                        + "                                                    <td valign=\"top\" style=\"padding-right:10px; padding-bottom:9px;\" class=\"mcnFollowContentItemContainer\">\n"
-                        + "                                                        <table border=\"0\" cellpadding=\"0\" cellspacing=\"0\" width=\"100%\" class=\"mcnFollowContentItem\">\n"
-                        + "                                                            <tbody><tr>\n"
-                        + "                                                                <td align=\"left\" valign=\"middle\" style=\"padding-top:5px; padding-right:10px; padding-bottom:5px; padding-left:9px;\">\n"
-                        + "                                                                    <table align=\"left\" border=\"0\" cellpadding=\"0\" cellspacing=\"0\" width=\"\">\n"
-                        + "                                                                        <tbody><tr>\n"
-                        + "\n"
-                        + "                                                                                <td align=\"center\" valign=\"middle\" width=\"24\" class=\"mcnFollowIconContent\">\n"
-                        + "                                                                                    <a href=\"http://www.twitter.com/\" target=\"_blank\"><img src=\"https://cdn-images.mailchimp.com/icons/social-block-v2/outline-light-twitter-48.png\" style=\"display:block;\" height=\"24\" width=\"24\" class=\"\"></a>\n"
-                        + "                                                                                </td>\n"
-                        + "\n"
-                        + "\n"
-                        + "                                                                        </tr>\n"
-                        + "                                                                    </tbody></table>\n"
-                        + "                                                                </td>\n"
-                        + "                                                            </tr>\n"
-                        + "                                                        </tbody></table>\n"
-                        + "                                                    </td>\n"
-                        + "                                                </tr>\n"
-                        + "                                            </tbody></table>\n"
-                        + "\n"
-                        + "\n"
-                        + "\n"
-                        + "                                            <table align=\"left\" border=\"0\" cellpadding=\"0\" cellspacing=\"0\" style=\"display:inline;\">\n"
-                        + "                                                <tbody><tr>\n"
-                        + "                                                    <td valign=\"top\" style=\"padding-right:10px; padding-bottom:9px;\" class=\"mcnFollowContentItemContainer\">\n"
-                        + "                                                        <table border=\"0\" cellpadding=\"0\" cellspacing=\"0\" width=\"100%\" class=\"mcnFollowContentItem\">\n"
-                        + "                                                            <tbody><tr>\n"
-                        + "                                                                <td align=\"left\" valign=\"middle\" style=\"padding-top:5px; padding-right:10px; padding-bottom:5px; padding-left:9px;\">\n"
-                        + "                                                                    <table align=\"left\" border=\"0\" cellpadding=\"0\" cellspacing=\"0\" width=\"\">\n"
-                        + "                                                                        <tbody><tr>\n"
-                        + "\n"
-                        + "                                                                                <td align=\"center\" valign=\"middle\" width=\"24\" class=\"mcnFollowIconContent\">\n"
-                        + "                                                                                    <a href=\"http://www.instagram.com/\" target=\"_blank\"><img src=\"https://cdn-images.mailchimp.com/icons/social-block-v2/outline-light-instagram-48.png\" style=\"display:block;\" height=\"24\" width=\"24\" class=\"\"></a>\n"
-                        + "                                                                                </td>\n"
-                        + "\n"
-                        + "\n"
-                        + "                                                                        </tr>\n"
-                        + "                                                                    </tbody></table>\n"
-                        + "                                                                </td>\n"
-                        + "                                                            </tr>\n"
-                        + "                                                        </tbody></table>\n"
-                        + "                                                    </td>\n"
-                        + "                                                </tr>\n"
-                        + "                                            </tbody></table>\n"
-                        + "\n"
-                        + "\n"
-                        + "\n"
-                        + "                                            <table align=\"left\" border=\"0\" cellpadding=\"0\" cellspacing=\"0\" style=\"display:inline;\">\n"
-                        + "                                                <tbody><tr>\n"
-                        + "                                                    <td valign=\"top\" style=\"padding-right:0; padding-bottom:9px;\" class=\"mcnFollowContentItemContainer\">\n"
-                        + "                                                        <table border=\"0\" cellpadding=\"0\" cellspacing=\"0\" width=\"100%\" class=\"mcnFollowContentItem\">\n"
-                        + "                                                            <tbody><tr>\n"
-                        + "                                                                <td align=\"left\" valign=\"middle\" style=\"padding-top:5px; padding-right:10px; padding-bottom:5px; padding-left:9px;\">\n"
-                        + "                                                                    <table align=\"left\" border=\"0\" cellpadding=\"0\" cellspacing=\"0\" width=\"\">\n"
-                        + "                                                                        <tbody><tr>\n"
-                        + "\n"
-                        + "                                                                                <td align=\"center\" valign=\"middle\" width=\"24\" class=\"mcnFollowIconContent\">\n"
-                        + "                                                                                    <a href=\"http://mailchimp.com\" target=\"_blank\"><img src=\"https://cdn-images.mailchimp.com/icons/social-block-v2/outline-light-link-48.png\" style=\"display:block;\" height=\"24\" width=\"24\" class=\"\"></a>\n"
-                        + "                                                                                </td>\n"
-                        + "\n"
-                        + "\n"
-                        + "                                                                        </tr>\n"
-                        + "                                                                    </tbody></table>\n"
-                        + "                                                                </td>\n"
-                        + "                                                            </tr>\n"
-                        + "                                                        </tbody></table>\n"
-                        + "                                                    </td>\n"
-                        + "                                                </tr>\n"
-                        + "                                            </tbody></table>\n"
-                        + "\n"
-                        + "\n"
-                        + "                                </td>\n"
-                        + "                            </tr>\n"
-                        + "                        </tbody></table>\n"
-                        + "                    </td>\n"
-                        + "                </tr>\n"
-                        + "            </tbody></table>\n"
-                        + "        </td>\n"
-                        + "    </tr>\n"
-                        + "</tbody></table>\n"
-                        + "\n"
-                        + "            </td>\n"
-                        + "        </tr>\n"
-                        + "    </tbody>\n"
-                        + "</table><table border=\"0\" cellpadding=\"0\" cellspacing=\"0\" width=\"100%\" class=\"mcnDividerBlock\" style=\"min-width:100%;\">\n"
-                        + "    <tbody class=\"mcnDividerBlockOuter\">\n"
-                        + "        <tr>\n"
-                        + "            <td class=\"mcnDividerBlockInner\" style=\"min-width:100%; padding:18px;\">\n"
-                        + "                <table class=\"mcnDividerContent\" border=\"0\" cellpadding=\"0\" cellspacing=\"0\" width=\"100%\" style=\"min-width: 100%;border-top: 2px solid #505050;\">\n"
-                        + "                    <tbody><tr>\n"
-                        + "                        <td>\n"
-                        + "                            <span></span>\n"
-                        + "                        </td>\n"
-                        + "                    </tr>\n"
-                        + "                </tbody></table>\n"
-                        + "\n"
-                        + "            </td>\n"
-                        + "        </tr>\n"
-                        + "    </tbody>\n"
-                        + "</table><table border=\"0\" cellpadding=\"0\" cellspacing=\"0\" width=\"100%\" class=\"mcnTextBlock\" style=\"min-width:100%;\">\n"
-                        + "    <tbody class=\"mcnTextBlockOuter\">\n"
-                        + "        <tr>\n"
-                        + "            <td valign=\"top\" class=\"mcnTextBlockInner\" style=\"padding-top:9px;\">\n"
-                        + "\n"
-                        + "                <table align=\"left\" border=\"0\" cellpadding=\"0\" cellspacing=\"0\" style=\"max-width:100%; min-width:100%;\" width=\"100%\" class=\"mcnTextContentContainer\">\n"
-                        + "                    <tbody><tr>\n"
-                        + "\n"
-                        + "                        <td valign=\"top\" class=\"mcnTextContent\" style=\"padding-top:0; padding-right:18px; padding-bottom:9px; padding-left:18px;\">\n"
-                        + "\n"
-                        + "                            <em>Copyright © 2017 - AOS SAS, All rights reserved.</em>\n"
-                        + "\n"
-                        + "                        </td>\n"
-                        + "                    </tr>\n"
-                        + "                </tbody></table>\n"
-                        + "\n"
-                        + "            </td>\n"
-                        + "        </tr>\n"
-                        + "    </tbody>\n"
-                        + "</table></td>\n"
-                        + "										</tr>\n"
-                        + "									</table>\n"
-                        + "\n"
-                        + "								</td>\n"
-                        + "                            </tr>\n"
-                        + "                        </table>\n"
-                        + "\n"
-                        + "                    </td>\n"
-                        + "                </tr>\n"
-                        + "            </table>\n"
-                        + "        </center>\n"
-                        + "    </body>\n"
-                        + "</html>";
-
-                message.setContent(header + "<p>" + emails[i].getText() + "</p>" + footer, "text/html; charset=utf-8");
-
+                message.addRecipient(Message.RecipientType.TO, new InternetAddress(email.getCustomer().getEmail()));
+                message.setSubject(subject);
+                message.setContent(contentText, "text/html; charset=utf-8");
                 // Lo enviamos.
                 Transport t = session.getTransport("smtp");
                 t.connect(FROM, "PRUEBASAOS");
                 t.sendMessage(message, message.getAllRecipients());
                 // Cierre.
                 t.close();
+                // Preparing notification entities
+                FullEntity<IncompleteKey> customer = Entity.newBuilder().set("idType", email.getCustomer().getIdType()).set("idNumber", email.getCustomer().getIdNumber()).set("firstName", email.getCustomer().getFirstName()).set("surname", email.getCustomer().getSurname()).set("email", email.getCustomer().getEmail()).set("cellPhone", email.getCustomer().getCellPhone()).build();
+                FullEntity<IncompleteKey> vehicle = Entity.newBuilder().set("licensePlate", email.getVehicle().getLicensePlate()).set("financeSecretariat", email.getVehicle().getFinanceSecretariat()).build();
+                FullEntity<IncompleteKey> fine = Entity.newBuilder().set("id", email.getFine().getId()).set("secretariat", email.getFine().getSecretariat()).set("infringementDate", email.getFine().getInfringementDate().longValue()).set("infringementDescription", email.getFine().getInfringementDescription()).set("amountPayWithoutCourse", email.getFine().getAmountPayWithoutCourse()).build();
+                FullEntity<IncompleteKey> tax = Entity.newBuilder().set("id", email.getTax().getId()).set("secretariat", email.getTax().getSecretariat()).set("amount", email.getTax().getAmount()).build();
+                //Guardar notificación
+                // Selección del "Kind" donde se van a almacenar los datos
+                KeyFactory keyFactory = datastore.newKeyFactory().setKind("notification");
+                //Crea un ID automaticamente para cada registro
+                Key notificationKey = datastore.allocateId(keyFactory.newKey());
+                Entity notification = Entity.newBuilder(notificationKey)
+                        .set("notificationDate", System.currentTimeMillis())
+                        .set("type", "email")
+                        .set("customer", customer)
+                        .set("vehicle", vehicle)
+                        .set("fine", fine)
+                        .set("tax", tax)
+                        .build();
+                // Saves the entity
+                datastore.put(notification);
             } catch (Exception e) {
-                e.printStackTrace();
+                LOGGER.error(e.getClass() + " - " + e.getMessage());
             }
-
         }
 
     }
 
+    /* public void sendEmailAdmin() throws IOException {
+
+        final Runnable tarea = new Runnable() {
+
+            public void run() {
+
+                //Enviar mensaje
+                try {
+
+                    Query<Entity> query = Query.newEntityQueryBuilder().setKind("parametrization").build();
+
+                    QueryResults<Entity> results = datastore.run(query);
+
+                    Entity entity = results.next();
+
+                    String FROM = "cristiandavidfrancogarcia@gmail.com";
+
+                    Properties props = new Properties();
+                    props.setProperty("mail.smtp.host", "smtp.gmail.com");
+                    props.setProperty("mail.smtp.ssl.enable", "true");
+                    props.setProperty("mail.smtp.starttls.enable", "true");
+                    props.setProperty("mail.smtp.auth", "true");
+                    props.setProperty("mail.smtp.port", "465");
+                    props.setProperty("mail.smtp.user", FROM);
+
+                    // Preparamos la sesion
+                    Session session = Session.getDefaultInstance(props);
+
+                    // Construimos el mensaje
+                    MimeMessage message = new MimeMessage(session);
+                    message.setFrom(new InternetAddress(FROM));
+                    message.addRecipient(Message.RecipientType.TO, new InternetAddress(
+                            "cristian.franco@aossas.com"));
+                    message.setSubject("Fotomulta al vehículo de placas");
+
+                    message.setContent(entity.getString("administratorEmailTemplate"), "text/html; charset=utf-8");
+
+                    // Lo enviamos.
+                    Transport t = session.getTransport("smtp");
+                    t.connect(FROM, "PRUEBASAOS");
+                    t.sendMessage(message, message.getAllRecipients());
+                    // Cierre.
+                    t.close();
+                } catch (Exception e) {
+                    e.printStackTrace();
+                }
+
+            }
+        };
+
+        Query<Entity> query = Query.newEntityQueryBuilder().setKind("parametrization").build();
+
+        QueryResults<Entity> results = datastore.run(query);
+
+        Entity entity = results.next();
+
+        ScheduledExecutorService timer = Executors.newSingleThreadScheduledExecutor();
+        timer.scheduleAtFixedRate(tarea, entity.getLong("initialDelay"), entity.getLong("period"), TimeUnit.SECONDS);
+    }*/
 }

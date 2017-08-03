@@ -5,49 +5,68 @@
  */
 package us.aosinternational.notifications.email;
 
+import us.aosinternational.notifications.entities.Customer;
+import us.aosinternational.notifications.entities.Fine;
+import us.aosinternational.notifications.entities.Tax;
+import us.aosinternational.notifications.entities.Vehicle;
+
 /**
  *
  * @author Cristian David Franco Garcia
  */
 public class Email {
 
-    private String to;
-    private String subject;
-    private String text;
+    private Vehicle vehicle;
+
+    private Customer customer;
+
+    private Fine fine;
+
+    private Tax tax;
 
     public Email() {
 
     }
 
-    public Email(String to, String subject, String text) {
+    public Email(Vehicle vehicle, Customer customer, Fine fine, Tax tax) {
         super();
-        this.to = to;
-        this.subject = subject;
-        this.text = text;
+        this.vehicle = vehicle;
+        this.customer = customer;
+        this.fine = fine;
+        this.tax = tax;
+
     }
 
-    public String getTo() {
-        return to;
+    public Vehicle getVehicle() {
+        return vehicle;
     }
 
-    public void setTo(String to) {
-        this.to = to;
+    public void setVehicle(Vehicle vehicle) {
+        this.vehicle = vehicle;
     }
 
-    public String getSubject() {
-        return subject;
+    public Customer getCustomer() {
+        return customer;
     }
 
-    public void setSubject(String subject) {
-        this.subject = subject;
+    public void setCustomer(Customer customer) {
+        this.customer = customer;
     }
 
-    public String getText() {
-        return text;
+    public Fine getFine() {
+        return fine;
     }
 
-    public void setText(String text) {
-        this.text = text;
+    public void setFine(Fine fine) {
+        this.fine = fine;
+    }
+
+    public Tax getTax() {
+        return tax;
+    }
+
+    public void setTax(Tax tax) {
+        this.tax = tax;
     }
 
 }
